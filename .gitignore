@@ -1,0 +1,7 @@
+data-builders/csv-builders/node_modules
+data/csv-data/out.csv
+data/csv-data/test.csv
+data/csv-data/train.csv
+data/image-data/images
+data/image-data/test-images
+data/image-data/train-images

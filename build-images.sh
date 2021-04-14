@@ -1,0 +1,1 @@
+python3 data-builders/image-builders/buildData.py
