@@ -4,3 +4,6 @@ data/csv-data/metadata.csv
 data/image-data/images
 data/image-data/test-images
 data/image-data/train-images
+.DS_Store
+data/.DS_Store
+data/image-data/.DS_Store

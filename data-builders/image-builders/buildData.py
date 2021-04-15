@@ -2,6 +2,7 @@ import os
 import shutil
 import csv
 import time
+import math
 import sys
 from os.path import abspath
 
@@ -29,11 +30,12 @@ def test(csvFilePath, imgFilePath, newImgPath):
             fileName = file.split('.')[0]
             sys.stdout.flush()
             if fileName in img_list:
+                if not os.path.exists(newImgPath):
+                    os.makedirs(newImgPath)
                 shutil.copy(os.path.join(root,file), newImgPath)
+                sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
                 sys.stdout.flush()
-                sys.stdout.write("\bCurrent progress: %s %%\r" % (str(int((idx / len(files)) * 100))))
-                sys.stdout.flush()
-    sys.stdout.write("\bDone")
+    sys.stdout.write("\b\nDone\n")
 
 
 def train(csvFilePath, imgFilePath, newImgPath):
@@ -49,11 +51,12 @@ def train(csvFilePath, imgFilePath, newImgPath):
             fileName = file.split('.')[0]
             sys.stdout.flush()
             if fileName in img_list:
+                if not os.path.exists(newImgPath):
+                    os.makedirs(newImgPath)
                 shutil.copy(os.path.join(root,file), newImgPath)
+                sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
                 sys.stdout.flush()
-                sys.stdout.write("\bCurrent progress: %s %%\r" % (str(int((idx / len(files)) * 100))))
-                sys.stdout.flush()
-    sys.stdout.write("\bDone")
+    sys.stdout.write("\b\nDone\n")
 
 
 train(trainCSVPath, images_path, trainImagesOutput)
