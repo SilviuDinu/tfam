@@ -15,9 +15,6 @@ test = datasets.MNIST('', train=False, download=True,
                        ]))
 
 
-
-
-
 trainset = torch.utils.data.DataLoader(train, batch_size=10, shuffle=True)
 testset = torch.utils.data.DataLoader(test, batch_size=10, shuffle=False)
 
@@ -48,6 +45,7 @@ optimizer = optim.Adam(net.parameters(), lr=0.001)
 for epoch in range(3): # 3 full passes over the data
     for data in trainset:  # `data` is a batch of data
         X, y = data  # X is the batch of features, y is the batch of targets.
+        print(X)
         net.zero_grad()  # sets gradients to 0 before loss calc. You will do this likely every step.
         output = net(X.view(-1,784))  # pass in the reshaped batch (recall they are 28x28 atm)
         loss = F.nll_loss(output, y)  # calc and grab the loss value
