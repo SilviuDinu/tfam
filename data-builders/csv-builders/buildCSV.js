@@ -2,8 +2,14 @@ const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
 
-const imageNames = require('./image-names');
-const processedImageNames = imageNames.map(el => el.split('.')[0]);
+const ISIC_IMAGES_PATH = path.join(__dirname, '../../data/image-data/images');
+let processedImageNames = [];
+
+fs.readdirSync(ISIC_IMAGES_PATH).forEach(file => {
+  if(file.includes('.jpg')) {
+    processedImageNames.push(file.split('.')[0]);
+  }
+});
 
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const trainDataWriter = createCsvWriter({
@@ -11,7 +17,6 @@ const trainDataWriter = createCsvWriter({
   header: [
     { id: '_id', title: '_id' },
     { id: 'name', title: 'name' },
-    { id: 'age', title: 'Age' },
     { id: 'meta.clinical.age_approx', title: 'Age' },
     { id: 'meta.clinical.benign_malignant', title: 'Benign/Malign' },
     { id: 'meta.clinical.diagnosis', title: 'Diagnosis' },
@@ -28,7 +33,6 @@ const testDataWriter = createCsvWriter({
   header: [
     { id: '_id', title: '_id' },
     { id: 'name', title: 'name' },
-    { id: 'age', title: 'Age' },
     { id: 'meta.clinical.age_approx', title: 'Age' },
     { id: 'meta.clinical.benign_malignant', title: 'Benign/Malign' },
     { id: 'meta.clinical.diagnosis', title: 'Diagnosis' },
@@ -43,12 +47,12 @@ const testDataWriter = createCsvWriter({
 const filteredData = [];
 
 const metadata = path.join(__dirname, '../../data/csv-data/metadata.csv');
-console.log('Processing items...')
+console.log('Processing items...');
 
 fs.createReadStream(metadata)
   .pipe(csv())
   .on('data', async row => {
-    if (processedImageNames.includes(row.name)) {
+    if (processedImageNames.includes(row.name) && hasMalignantInfo(row)) {
       filteredData.push(row);
     }
   })
@@ -61,22 +65,29 @@ fs.createReadStream(metadata)
       Promise
         .all([writeTrainData(train), writeTestData(test)])
         .then(() => console.log('All done!'))
-        .catch((err) => console.error(err))
+        .catch(err => console.error(err));
 
-      
     } else {
       console.log('No items to write. Aborting...');
     }
   });
 
-  writeTrainData = async (data) => {
-    console.log(`Writing ${data.length} elements to train.csv...`);
-    const trainPromise = trainDataWriter.writeRecords(data);
-    return await trainPromise;
-  }
+writeTrainData = async data => {
+  console.log(`Writing ${data.length} elements to train.csv...`);
+  const trainPromise = trainDataWriter.writeRecords(data);
+  return await trainPromise;
+}
 
-  writeTestData = async (data) => {
-    console.log(`Writing ${data.length} elements to test.csv...`);
-    const testPromise = testDataWriter.writeRecords(data);
-    return await testPromise;
-  }
+writeTestData = async data => {
+  console.log(`Writing ${data.length} elements to test.csv...`);
+  const testPromise = testDataWriter.writeRecords(data);
+  return await testPromise;
+}
+
+const hasMalignantInfo = row => {
+  return (
+    !!row['meta.clinical.benign_malignant'] &&
+    (row['meta.clinical.benign_malignant'] === 'benign'
+    || row['meta.clinical.benign_malignant'] === 'malignant')
+  );
+};
