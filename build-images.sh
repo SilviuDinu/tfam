@@ -1,1 +1,1 @@
-python3 data-builders/image-builders/buildData.py
+python3 data-builders/image-builders/buildScaledImages.py
