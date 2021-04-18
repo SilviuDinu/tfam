@@ -12,9 +12,12 @@ from os.path import abspath
 
 curr = os.path.dirname(__file__)
 
-default_path = '/Users/silviu/Desktop/projects/cercetare_sem2/data/image-data/test-images'
+default_path = '/Users/silviu/Desktop/projects/tfam/data/image-data/test-images'
 
 input_path = input("Path to images that need to be cropped: ")
+if not input_path:
+    input_path = default_path
+
 output_path = os.path.join(curr, '../../data/image-data/cropped-images/')
 
 def crop(imgFilePath, newImgPath):
@@ -34,7 +37,7 @@ def crop(imgFilePath, newImgPath):
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # convert to grayscale
 
             # threshold to get just the signature
-            retval, thresh_gray = cv2.threshold(gray, thresh=20, maxval=255, type=cv2.THRESH_BINARY)
+            retval, thresh_gray = cv2.threshold(gray, thresh=140, maxval=255, type=cv2.THRESH_BINARY)
 
             # find where the signature is and make a cropped region
             points = np.argwhere(thresh_gray==0) # find where the black pixels are
@@ -45,7 +48,7 @@ def crop(imgFilePath, newImgPath):
 
             # get the thresholded crop
             retval, thresh_crop = cv2.threshold(crop, thresh=200, maxval=255, type=cv2.THRESH_BINARY)
-            new_img =  gray = cv2.cvtColor(thresh_crop, cv2.COLOR_GRAY2RGB) # convert to grayscale
+            new_img = cv2.cvtColor(thresh_crop, cv2.COLOR_GRAY2RGB) # convert to grayscale
 
 
             cv2.imwrite(os.path.join(newImgPath, file), new_img)
