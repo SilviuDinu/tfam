@@ -1,1 +1,0 @@
-python3 data-builders/image-builders/buildScaledImages.py
