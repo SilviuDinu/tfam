@@ -38,7 +38,7 @@ def build_word_doc(rows, headers, doc_name):
             if os.path.isfile(value) or os.path.isdir(value):
                 paragraph = t.cell(i+1,j).paragraphs[0]
                 run = paragraph.add_run()
-                run.add_picture(value, width=60, height=60)
+                run.add_picture(value)
             else:
                 t.cell(i+1,j).text = value
 
