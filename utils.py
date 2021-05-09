@@ -148,12 +148,16 @@ def dbc(img,s):
 def rgb(imgFilePath, newImgPath):
     first_headers = ['Image_name', 'Image','Canal', 'Ns', 'procent_box', 'factor_div', 'fractal_dim', 'lacunaritate_m','nr_boxes']
     lacunaritate_header = ['Image_name', 'Canal', '2', '3', '4', '5', '6', '7', '9', '10', '12', '14', '17', '20', '23', '27', '31', '37']
+    original_images_header = ['Nume', 'Original', 'R', 'G', 'B']
     lacunaritate_tabel_terminal = PrettyTable(['Image_name', 'Canal', '2', '3', '4', '5', '6', '7', '9', '10', '12', '14', '17', '20', '23', '27', '31', '37'])
 
     first_rows = []
+    original_images_rows = []
     lacunaritate_rows = []
 
 #  str(key) + ' => ' + str(round(lacunaritate[key], 5))
+
+    original_images_path = os.path.join(curr, r'data/image-data/imagini')
 
     print('Splitting into r, g, b then calculate lacunarity and fractal dimension...')
     b_path = os.path.join(newImgPath, r'b')
@@ -182,6 +186,9 @@ def rgb(imgFilePath, newImgPath):
             cv2.imwrite(os.path.join(r_path, file), r)
 
             filename = file.split('.')[0]
+            original_filename = file.split('ISIC_')[1]
+            original_images_rows.append([filename, os.path.join(original_images_path, original_filename), os.path.join(r_path, file), os.path.join(g_path, file), os.path.join(b_path, file)])
+
             lacunaritate_medie = 0
             lacunaritate_R = [filename, 'R']
             Ns, procent_box, factor_divizare, fractal_dim, lacunaritate, nr_boxes = calc_lacunarity_and_fractal_dim(os.path.join(r_path, file))
@@ -223,6 +230,7 @@ def rgb(imgFilePath, newImgPath):
     
     build_word_doc(first_rows, first_headers, 'tabel_principal.docx')
     build_word_doc(lacunaritate_rows, lacunaritate_header, 'lacunaritate.docx')
+    build_word_doc(original_images_rows, original_images_header, 'original_images.docx')
     sys.stdout.write("\b\nDone\n")
     print(lacunaritate_tabel_terminal)
 
