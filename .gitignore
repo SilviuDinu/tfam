@@ -4,6 +4,7 @@ data/csv-data/metadata.csv
 data/image-data/images
 data/image-data/test-images
 data/image-data/imagini
+data/image-data/
 data/image-data/cropped-images
 data/image-data/train-images
 .DS_Store
@@ -11,3 +12,9 @@ data/.DS_Store
 data/image-data/.DS_Store
 data-builders/.DS_Store
 data-builders/csv-builders/image-names.js
+dsa.docx
+first_table.docx
+test.docx
+__pycache__/
+lacunaritate.docx
+tabel_principal.docx

@@ -11,8 +11,40 @@ from matplotlib.pyplot import *
 import matplotlib.pyplot as plt
 from os.path import abspath
 from prettytable import PrettyTable
+import docx
+from docx import Document
+import pandas as pd
 
 curr = os.path.dirname(__file__)
+
+def build_word_doc(rows, headers, doc_name):
+    df = pd.DataFrame(rows, columns=headers)
+    if not os.path.exists(os.path.join(curr, doc_name)):
+        document = Document()
+        document.save(os.path.join(curr, doc_name))
+
+    # open an existing document
+    doc = docx.Document(os.path.join(curr, doc_name))
+    t = doc.add_table(df.shape[0]+1, df.shape[1])
+
+    # add the header rows.
+    for j in range(df.shape[-1]):
+        t.cell(0,j).text = df.columns[j]
+
+    # add the rest of the data frame
+    for i in range(df.shape[0]):
+        for j in range(df.shape[-1]):
+            name = str(df.values[i,j])
+            if "c:" in name:
+                paragraph = t.cell(i+1,j).paragraphs[0]
+                run = paragraph.add_run()
+                run.add_picture(str(df.values[i,j]), width=60, height=60)
+            else:
+                t.cell(i+1,j).text = str(df.values[i,j])
+
+    # save the doc
+    doc.save(os.path.join(curr, doc_name))
+
 
 def build_scaled(imgFilePath, newImgPath):
     size = 128, 128
@@ -36,8 +68,8 @@ def build_scaled(imgFilePath, newImgPath):
             try:
                 im = Image.open(os.path.join(newImgPath, file))
                 im = im.resize(size, Image.ANTIALIAS)
-                sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
                 sys.stdout.flush()
+                sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
                 im.save(os.path.join(newImgPath, outfile), "JPEG" ,quality=100)
                 os.remove(os.path.join(newImgPath, file))
             except IOError:
@@ -67,11 +99,11 @@ def crop(imgFilePath, newImgPath):
             # Cropped image of above dimension
             # (It will not change orginal image)
             im1 = im.crop((left, top, right, bottom))
-            sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
             sys.stdout.flush()
+            sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
             # Shows the image in image viewer
             im1.save(os.path.join(newImgPath, file))
-    sys.stdout.write("\b\nDone\n")
+    sys.stdout.write("\bDone\n")
 
 
 
@@ -111,7 +143,15 @@ def dbc(img,s):
     return Ns, N, nr
 
 def rgb(imgFilePath, newImgPath):
-    t = PrettyTable(['Nr. crt.', 'Image', 'Canal', 'Ns', 'procent_box (r)', 'factor_divizare (S)', 'fractal_dim', 'lacunaritate', 'nr_boxes'])
+    first_headers = ['Image_name', 'Image','Canal', 'Ns', 'procent_box', 'factor_div', 'fractal_dim', 'lacunaritate_m','nr_boxes']
+    lacunaritate_header = ['Image_name', 'Canal', '2', '3', '4', '5', '6', '7', '9', '10', '12', '14', '17', '20', '23', '27', '31', '37']
+    lacunaritate_tabel_terminal = PrettyTable(['Image_name', 'Canal', '2', '3', '4', '5', '6', '7', '9', '10', '12', '14', '17', '20', '23', '27', '31', '37'])
+
+    first_rows = []
+    lacunaritate_rows = []
+
+#  str(key) + ' => ' + str(round(lacunaritate[key], 5))
+
     print('Splitting into r, g, b then calculate lacunarity and fractal dimension...')
     b_path = os.path.join(newImgPath, r'b')
     g_path = os.path.join(newImgPath, r'g')
@@ -138,17 +178,50 @@ def rgb(imgFilePath, newImgPath):
             cv2.imwrite(os.path.join(g_path, file), g)
             cv2.imwrite(os.path.join(r_path, file), r)
 
+            filename = file.split('.')[0]
+            lacunaritate_medie = 0
+            lacunaritate_R = [filename, 'R']
             Ns, procent_box, factor_divizare, fractal_dim, lacunaritate, nr_boxes = calc_lacunarity_and_fractal_dim(os.path.join(r_path, file))
-            t.add_row([idx, file, 'R', Ns, round(procent_box, 5), round(factor_divizare, 5), round(fractal_dim, 5), round(lacunaritate, 5), nr_boxes])
+            # t.add_row([idx, file, 'R', Ns, round(procent_box, 5), round(factor_divizare, 5), round(fractal_dim, 5), nr_boxes])
+            for index, key in enumerate(lacunaritate):
+                lacunaritate_medie += lacunaritate[key]
+                lacunaritate_R.append(str(round(lacunaritate[key], 4)))
+            lacunaritate_medie = lacunaritate_medie / len(lacunaritate)
+            first_rows.append([filename, os.path.join(r_path, file), 'R', Ns, round(procent_box, 4), round(factor_divizare, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
+            lacunaritate_rows.append(lacunaritate_R)
+            lacunaritate_tabel_terminal.add_row(lacunaritate_R)
+
+            lacunaritate_G = [filename, 'G']
             Ns, procent_box, factor_divizare, fractal_dim, lacunaritate, nr_boxes = calc_lacunarity_and_fractal_dim(os.path.join(g_path, file))
-            t.add_row(['', file, 'G', Ns, round(procent_box, 5), round(factor_divizare, 5), round(fractal_dim, 5), round(lacunaritate, 5), nr_boxes])
+            # t.add_row([idx, file, 'G', Ns, round(procent_box, 5), round(factor_divizare, 4), round(fractal_dim, 5), nr_boxes])
+            for index, key in enumerate(lacunaritate):
+                lacunaritate_medie += lacunaritate[key]
+                lacunaritate_G.append(str(round(lacunaritate[key], 4)))
+            lacunaritate_medie = lacunaritate_medie / len(lacunaritate)
+            first_rows.append([filename, os.path.join(g_path, file), 'G', Ns, round(procent_box, 4), round(factor_divizare, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
+            lacunaritate_rows.append(lacunaritate_G)
+            lacunaritate_tabel_terminal.add_row(lacunaritate_G)
+     
+            lacunaritate_B = [filename, 'B']
             Ns, procent_box, factor_divizare, fractal_dim, lacunaritate, nr_boxes = calc_lacunarity_and_fractal_dim(os.path.join(b_path, file))
-            t.add_row(['', file, 'B', Ns, round(procent_box, 5), round(factor_divizare, 5), round(fractal_dim, 5), round(lacunaritate, 5), nr_boxes])
-            t.add_row(['-', '-', '-', '-', '-', '-', '-', '-', '-'])
-            sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
+            # t.add_row([idx, file, 'B', Ns, round(procent_box, 5), round(factor_divizare, 5), round(fractal_dim, 5), nr_boxes])
+            for index, key in enumerate(lacunaritate):
+                lacunaritate_medie += lacunaritate[key]
+                lacunaritate_B.append(str(round(lacunaritate[key], 4)))
+            lacunaritate_medie = lacunaritate_medie / len(lacunaritate)
+            first_rows.append([filename, os.path.join(b_path, file), 'B', Ns, round(procent_box, 4), round(factor_divizare, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
+            lacunaritate_rows.append(lacunaritate_B)
+            lacunaritate_tabel_terminal.add_row(lacunaritate_B)
+
+            first_rows.append(['-', '-', '-', '-', '-', '-', '-', '-', '-'])
+            lacunaritate_tabel_terminal.append([['-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-']])
             sys.stdout.flush()
+            sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
+    
+    build_word_doc(first_rows, first_headers, 'tabel_principal.docx')
+    build_word_doc(lacunaritate_rows, lacunaritate_header, 'lacunaritate.docx')
     sys.stdout.write("\b\nDone\n")
-    print(t) 
+    print(lacunaritate_tabel_terminal)
 
 
 def calc_lacunarity_and_fractal_dim(path):
@@ -201,8 +274,8 @@ def calc_lacunarity_and_fractal_dim(path):
         
     errorfit = (1/N)*math.sqrt(Sum/(1+D**2))
 
-    # # figure size 10x5 inches
-    # plt.figure(1,figsize=(10,5)).canvas.set_window_title('Fractal Dimension Calculate')
+    # figure size 10x5 inches
+    # plt.figure(1,figsize=(10,5))
     # plt.subplots_adjust(left=0.04,right=0.98)
     # plt.subplot(121)
     # plt.title(path)
@@ -218,6 +291,8 @@ def calc_lacunarity_and_fractal_dim(path):
     # plt.legend(loc=4)
     # plt.xlabel('log(1/r)')
     # plt.ylabel('log(Nr)')
-    # plt.show()
+    # plt.show(block=False)
+    # plt.pause(0.1)
+    # plt.close()
 
-    return Ns, R, S, D, L[int(S)], N*N
+    return Ns, R, S, D, L, N*N
