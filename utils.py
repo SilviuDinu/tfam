@@ -34,13 +34,13 @@ def build_word_doc(rows, headers, doc_name):
     # add the rest of the data frame
     for i in range(df.shape[0]):
         for j in range(df.shape[-1]):
-            name = str(df.values[i,j])
-            if "c:" in name:
+            value = str(df.values[i,j])
+            if os.path.isfile(value) or os.path.isdir(value):
                 paragraph = t.cell(i+1,j).paragraphs[0]
                 run = paragraph.add_run()
-                run.add_picture(str(df.values[i,j]), width=60, height=60)
+                run.add_picture(value, width=60, height=60)
             else:
-                t.cell(i+1,j).text = str(df.values[i,j])
+                t.cell(i+1,j).text = value
 
     # save the doc
     doc.save(os.path.join(curr, doc_name))
@@ -88,21 +88,24 @@ def crop(imgFilePath, newImgPath):
 
             new_width = 75
             new_height = 75
-
-            im = Image.open(os.path.join(imgFilePath, file))
-            width, height = im.size
-            left = int(np.floor((width - new_width)/2))
-            top =  int(np.floor((height - new_height)/2))
-            right = int(np.floor((width + new_width)/2))
-            bottom = int(np.floor((height + new_height)/2))
+            try:
+                im = Image.open(os.path.join(imgFilePath, file))
+                width, height = im.size
+                left = int(np.floor((width - new_width)/2))
+                top =  int(np.floor((height - new_height)/2))
+                right = int(np.floor((width + new_width)/2))
+                bottom = int(np.floor((height + new_height)/2))
+                
+                # Cropped image of above dimension
+                # (It will not change orginal image)
+                im1 = im.crop((left, top, right, bottom))
+                sys.stdout.flush()
+                sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
+                # Shows the image in image viewer
+                im1.save(os.path.join(newImgPath, file))
+            except IOError:
+                print("cannot crop '%s'" % file)
             
-            # Cropped image of above dimension
-            # (It will not change orginal image)
-            im1 = im.crop((left, top, right, bottom))
-            sys.stdout.flush()
-            sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
-            # Shows the image in image viewer
-            im1.save(os.path.join(newImgPath, file))
     sys.stdout.write("\bDone\n")
 
 
@@ -214,7 +217,7 @@ def rgb(imgFilePath, newImgPath):
             lacunaritate_tabel_terminal.add_row(lacunaritate_B)
 
             first_rows.append(['-', '-', '-', '-', '-', '-', '-', '-', '-'])
-            lacunaritate_tabel_terminal.append([['-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-']])
+            lacunaritate_tabel_terminal.add_row(['-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'])
             sys.stdout.flush()
             sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
     
