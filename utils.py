@@ -13,6 +13,7 @@ from os.path import abspath
 from prettytable import PrettyTable
 import docx
 from docx import Document
+from docx.shared import Inches
 import pandas as pd
 
 curr = os.path.dirname(__file__)
@@ -38,7 +39,7 @@ def build_word_doc(rows, headers, doc_name):
             if os.path.isfile(value) or os.path.isdir(value):
                 paragraph = t.cell(i+1,j).paragraphs[0]
                 run = paragraph.add_run()
-                run.add_picture(value)
+                run.add_picture(value, width=Inches(0.65), height=Inches(0.65))
             else:
                 t.cell(i+1,j).text = value
 
@@ -146,7 +147,7 @@ def dbc(img,s):
     return Ns, N, nr
 
 def rgb(imgFilePath, newImgPath):
-    first_headers = ['Image_name', 'Image','Canal', 'Ns', 'procent_box', 'factor_div', 'fractal_dim', 'lacunaritate_m','nr_boxes']
+    first_headers = ['Image_name', 'Image','Canal', 'Ns', 'procent_box', 'fractal_dim', 'lacunaritate_m','nr_boxes']
     lacunaritate_header = ['Image_name', 'Canal', '2', '3', '4', '5', '6', '7', '9', '10', '12', '14', '17', '20', '23', '27', '31', '37']
     original_images_header = ['Nume', 'Original', 'R', 'G', 'B']
     lacunaritate_tabel_terminal = PrettyTable(['Image_name', 'Canal', '2', '3', '4', '5', '6', '7', '9', '10', '12', '14', '17', '20', '23', '27', '31', '37'])
@@ -197,7 +198,7 @@ def rgb(imgFilePath, newImgPath):
                 lacunaritate_medie += lacunaritate[key]
                 lacunaritate_R.append(str(round(lacunaritate[key], 4)))
             lacunaritate_medie = lacunaritate_medie / len(lacunaritate)
-            first_rows.append([filename, os.path.join(r_path, file), 'R', Ns, round(procent_box, 4), round(factor_divizare, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
+            first_rows.append([filename, os.path.join(r_path, file), 'R', Ns, round(procent_box, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
             lacunaritate_rows.append(lacunaritate_R)
             lacunaritate_tabel_terminal.add_row(lacunaritate_R)
 
@@ -208,7 +209,7 @@ def rgb(imgFilePath, newImgPath):
                 lacunaritate_medie += lacunaritate[key]
                 lacunaritate_G.append(str(round(lacunaritate[key], 4)))
             lacunaritate_medie = lacunaritate_medie / len(lacunaritate)
-            first_rows.append([filename, os.path.join(g_path, file), 'G', Ns, round(procent_box, 4), round(factor_divizare, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
+            first_rows.append([filename, os.path.join(g_path, file), 'G', Ns, round(procent_box, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
             lacunaritate_rows.append(lacunaritate_G)
             lacunaritate_tabel_terminal.add_row(lacunaritate_G)
      
@@ -219,11 +220,11 @@ def rgb(imgFilePath, newImgPath):
                 lacunaritate_medie += lacunaritate[key]
                 lacunaritate_B.append(str(round(lacunaritate[key], 4)))
             lacunaritate_medie = lacunaritate_medie / len(lacunaritate)
-            first_rows.append([filename, os.path.join(b_path, file), 'B', Ns, round(procent_box, 4), round(factor_divizare, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
+            first_rows.append([filename, os.path.join(b_path, file), 'B', Ns, round(procent_box, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
             lacunaritate_rows.append(lacunaritate_B)
             lacunaritate_tabel_terminal.add_row(lacunaritate_B)
 
-            first_rows.append(['-', '-', '-', '-', '-', '-', '-', '-', '-'])
+            # first_rows.append(['-', '-', '-', '-', '-', '-', '-', '-'])
             lacunaritate_tabel_terminal.add_row(['-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'])
             sys.stdout.flush()
             sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
