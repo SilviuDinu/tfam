@@ -46,33 +46,63 @@ def build_word_doc(rows, headers, doc_name):
     # save the doc
     doc.save(os.path.join(curr, doc_name))
 
+def build_graph(names, medie, r, g, b, title):       
+    X = np.arange(len(names))
+    fig = plt.figure(figsize=(15, 8), dpi=80)
+
+    # ax = fig.add_axes([0,0,1,1])
+    ax = fig.add_subplot(111)
+    ax.bar(X + 0.00, r, color = 'r', width = 0.20, label='canal R')
+    ax.bar(X + 0.20, g, color = 'g', width = 0.20, label='canal G')
+    ax.bar(X + 0.40, b, color = 'b', width = 0.20, label='canal B')
+    ax.bar(X + 0.60, medie, color = 'pink', width = 0.20, label='Media')
+
+    ax.set_title(title)
+    ax.legend()
+
+    plt.xticks([i + 0.35 for i in range(len(names))], names)
+    plt.title(title)
+    plt.xlabel(title)
+    plt.ylabel('Values')
+    plt.show()
+
 def build_graphs(data, title):
-    benigne = []
-    maligne = []
+    benigne = {
+        "overall": [],
+        "name": [],
+        "medie": [],
+        "r": [],
+        "g": [],
+        "b": []
+    }
+    maligne = {
+        "overall": [],
+        "name": [],
+        "medie": [],
+        "r": [],
+        "g": [],
+        "b": []
+    }
     for i in data:
         name, values = i
         if '_b' in name:
-            benigne.append([name, values["r"], values["g"], values["b"], values["medie"]])
+            benigne["overall"].append([name, values["r"], values["g"], values["b"], values["medie"]])
+            benigne["name"].append(name)
+            benigne["r"].append(values["r"])
+            benigne["g"].append(values["g"])
+            benigne["b"].append(values["b"])
+            benigne["medie"].append(values["medie"])
         elif '_m' in name:
-            maligne.append((name, values["r"], values["g"], values["b"], values["medie"]))
+            maligne["overall"].append([name, values["r"], values["g"], values["b"], values["medie"]])
+            maligne["name"].append(name)
+            maligne["r"].append(values["r"])
+            maligne["g"].append(values["g"])
+            maligne["b"].append(values["b"])
+            maligne["medie"].append(values["medie"])
     
-    print(maligne)
-        
-    for ben in benigne:
-        print(ben)
-    # X = np.arange(10)
-    # fig = plt.figure(figsize=(15, 8), dpi=80)
+    build_graph(benigne["name"], benigne["medie"], benigne["r"], benigne["g"], benigne["b"], title)
+    build_graph(maligne["name"], maligne["medie"], maligne["r"], maligne["g"], maligne["b"], title)
 
-    # ax = fig.add_axes([0,0,1,1])
-    # ax.bar(X + 0.00, values["b"], color = 'b', width = 0.20, label='canal R')
-    # ax.bar(X + 0.20, values["g"], color = 'g', width = 0.20, label='canal G')
-    # ax.bar(X + 0.40, values["r"], color = 'r', width = 0.20, label='canal B')
-    # ax.bar(X + 0.60,  values["medie"], color = 'purple', width = 0.20, label='Media')
-    # leg = ax.legend()
-
-    # #plt.xticks(X, ['img_1', 'G2', 'G3', 'G4', 'G5', 'img6', 'img7', 'img8', 'img9', 'img10'])
-    # # plt.xticks(X, images_bkl)
-    # plt.title(title)
 
 
 def build_scaled(imgFilePath, newImgPath):
@@ -187,6 +217,8 @@ def rgb(imgFilePath, newImgPath):
     dim_fractala_medie_rows = []
 #  str(key) + ' => ' + str(round(lacunaritate[key], 5))
 
+    lacunaritate_tabel_terminal = PrettyTable(lacunaritate_header)
+
     original_images_path = os.path.join(curr, r'data/image-data/imagini')
 
     print('Splitting into r, g, b then calculate lacunarity and fractal dimension...')
@@ -232,9 +264,9 @@ def rgb(imgFilePath, newImgPath):
             Ns, procent_box, factor_divizare, fractal_dim, lacunaritate, nr_boxes = calc_lacunarity_and_fractal_dim(os.path.join(r_path, file))
             for index, key in enumerate(lacunaritate):
                 lacunaritate_medie += lacunaritate[key]
-                lacunaritate_tabel_terminal_header.append(str(key))
+                # lacunaritate_tabel_terminal_header.append(str(key))
                 lacunaritate_R.append(str(round(lacunaritate[key], 4)))
-            lacunaritate_tabel_terminal = PrettyTable(set(lacunaritate_tabel_terminal_header))
+            # lacunaritate_tabel_terminal = PrettyTable(set(lacunaritate_tabel_terminal_header))
             lacunaritate_medie = lacunaritate_medie / len(lacunaritate)
             lacunaritate_medie_list.append(lacunaritate_medie)
             first_rows.append([filename, os.path.join(r_path, file), 'R', Ns, round(procent_box, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4)])
@@ -272,7 +304,7 @@ def rgb(imgFilePath, newImgPath):
             dim_medii["b"] = fractal_dim
             lac_medii["b"] = lacunaritate_medie
 
-            lacunaritate_tabel_terminal.add_row(['-'] * len(set(lacunaritate_tabel_terminal_header)))
+            lacunaritate_tabel_terminal.add_row(['-'] * len(lacunaritate_header))
             dim_fractala_medie_rows.append([filename, os.path.join(original_images_path, original_filename), sum(dimensiune_fractala_medie_list) / len(dimensiune_fractala_medie_list), sum(lacunaritate_medie_list) / len(lacunaritate_medie_list)])
 
             dim_medii["medie"] = sum(dimensiune_fractala_medie_list) / len(dimensiune_fractala_medie_list)
@@ -292,6 +324,12 @@ def rgb(imgFilePath, newImgPath):
     build_word_doc(lacunaritate_rows, lacunaritate_header, 'lacunaritate.docx')
     build_word_doc(original_images_rows, original_images_header, 'original_images.docx')
     build_word_doc(dim_fractala_medie_rows, dim_fractala_medie_header, 'dim_fractala_medie.docx')
+
+    # lacunaritate_tabel_terminal = PrettyTable(lacunaritate_header)
+    # for row in lacunaritate_rows:
+    #     lacunaritate_tabel_terminal.add_row(row)
+    #     lacunaritate_tabel_terminal.add_row(['-'] * len(row))
+        
     sys.stdout.write("\b\nDone\n")
     print(lacunaritate_tabel_terminal)
 
