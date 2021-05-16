@@ -46,6 +46,38 @@ def build_word_doc(rows, headers, doc_name):
     # save the doc
     doc.save(os.path.join(curr, doc_name))
 
+def build_graphs(data, title):
+    # L_r_BKL = [2.4103, 2.0931, 2.0253, 1.8987, 2.1730, 1.9748, 2.2726, 1.8851, 1.9648, 1.4755]
+    # L_g_BKL = [2.3268, 1.6914, 1.9552, 1.7396, 1.9713, 1.7981, 2.0550, 1.7214, 1.7862, 1.3639]
+    # L_b_BKL = [2.0631, 1.4805, 1.8781, 1.4857, 1.8534, 1.5355, 1.7378, 1.4143, 1.6267, 1.3046]
+    # L_rgb_BKL = [2.2668, 1.7550, 1.9529, 1.7080, 1.9992, 1.7695, 2.0218, 1.6736, 1.7926, 1.3813]
+    maligne = []
+    benigne = []
+    print(data)
+    for i in data:
+        name, values = i
+        if '_b' in name:
+            benigne.append((name, values))
+        elif '_m' in name:
+            maligne.append((name, values))
+    
+    print(maligne)
+        
+
+    # X = np.arange(10)
+    # fig = plt.figure(figsize=(15, 8), dpi=80)
+
+    # ax = fig.add_axes([0,0,1,1])
+    # ax.bar(X + 0.00, L_r_BKL, color = 'b', width = 0.20, label='canal R')
+    # ax.bar(X + 0.20, L_g_BKL, color = 'g', width = 0.20, label='canal G')
+    # ax.bar(X + 0.40, L_b_BKL, color = 'r', width = 0.20, label='canal B')
+    # ax.bar(X + 0.60, L_rgb_BKL, color = 'purple', width = 0.20, label='Media')
+    # leg = ax.legend()
+
+    # #plt.xticks(X, ['img_1', 'G2', 'G3', 'G4', 'G5', 'img6', 'img7', 'img8', 'img9', 'img10'])
+    # # plt.xticks(X, images_bkl)
+    # plt.title(title)
+
 
 def build_scaled(imgFilePath, newImgPath):
     size = 128, 128
@@ -147,7 +179,7 @@ def dbc(img,s):
     return Ns, N, nr
 
 def rgb(imgFilePath, newImgPath):
-    first_headers = ['Image_name', 'Image','Canal', 'Ns', 'procent_box', 'fractal_dim', 'lacunaritate_m','nr_boxes']
+    first_headers = ['Image_name', 'Image','Canal', 'Ns', 'procent_box', 'fractal_dim', 'lacunaritate_m']
     lacunaritate_header = ['Image_name', 'Canal', '2', '3', '4', '5', '6', '7', '9', '10', '12', '14', '17', '20', '23', '27', '31', '37']
     original_images_header = ['Nume', 'Original', 'R', 'G', 'B']
     lacunaritate_tabel_terminal_header = ['Image_name', 'Canal']
@@ -176,6 +208,9 @@ def rgb(imgFilePath, newImgPath):
     if not os.path.exists(r_path):
         os.makedirs(r_path)
 
+    dim_fractal_graph = []
+    lac_graph = []
+
     for root, dirs, files in os.walk(imgFilePath):
         for idx, file in enumerate(files):
 
@@ -190,6 +225,8 @@ def rgb(imgFilePath, newImgPath):
             filename = file.split('.')[0]
             original_filename = file.split('ISIC_')[1]
             original_images_rows.append([filename, os.path.join(original_images_path, original_filename), os.path.join(r_path, file), os.path.join(g_path, file), os.path.join(b_path, file)])
+            dim_medii = {}
+            lac_medii = {}
 
             lacunaritate_medie = 0
             lacunaritate_medie_list = []
@@ -204,10 +241,12 @@ def rgb(imgFilePath, newImgPath):
             lacunaritate_tabel_terminal = PrettyTable(set(lacunaritate_tabel_terminal_header))
             lacunaritate_medie = lacunaritate_medie / len(lacunaritate)
             lacunaritate_medie_list.append(lacunaritate_medie)
-            first_rows.append([filename, os.path.join(r_path, file), 'R', Ns, round(procent_box, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
+            first_rows.append([filename, os.path.join(r_path, file), 'R', Ns, round(procent_box, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4)])
             lacunaritate_rows.append(lacunaritate_R)
             lacunaritate_tabel_terminal.add_row(lacunaritate_R)
             dimensiune_fractala_medie_list.append(fractal_dim)
+            dim_medii["r"] = fractal_dim
+            lac_medii["r"] = lacunaritate_medie
 
             lacunaritate_G = [filename, 'G']
             Ns, procent_box, factor_divizare, fractal_dim, lacunaritate, nr_boxes = calc_lacunarity_and_fractal_dim(os.path.join(g_path, file))
@@ -216,10 +255,12 @@ def rgb(imgFilePath, newImgPath):
                 lacunaritate_G.append(str(round(lacunaritate[key], 4)))
             lacunaritate_medie = lacunaritate_medie / len(lacunaritate)
             lacunaritate_medie_list.append(lacunaritate_medie)
-            first_rows.append([filename, os.path.join(g_path, file), 'G', Ns, round(procent_box, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
+            first_rows.append([filename, os.path.join(g_path, file), 'G', Ns, round(procent_box, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4)])
             lacunaritate_rows.append(lacunaritate_G)
             lacunaritate_tabel_terminal.add_row(lacunaritate_G)
             dimensiune_fractala_medie_list.append(fractal_dim)
+            dim_medii["g"] = fractal_dim
+            lac_medii["g"] = lacunaritate_medie
      
             lacunaritate_B = [filename, 'B']
             Ns, procent_box, factor_divizare, fractal_dim, lacunaritate, nr_boxes = calc_lacunarity_and_fractal_dim(os.path.join(b_path, file))
@@ -228,16 +269,31 @@ def rgb(imgFilePath, newImgPath):
                 lacunaritate_B.append(str(round(lacunaritate[key], 4)))
             lacunaritate_medie = lacunaritate_medie / len(lacunaritate)
             lacunaritate_medie_list.append(lacunaritate_medie)
-            first_rows.append([filename, os.path.join(b_path, file), 'B', Ns, round(procent_box, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4), nr_boxes])
+            first_rows.append([filename, os.path.join(b_path, file), 'B', Ns, round(procent_box, 4), round(fractal_dim, 5), round(lacunaritate_medie, 4)])
             lacunaritate_rows.append(lacunaritate_B)
             lacunaritate_tabel_terminal.add_row(lacunaritate_B)
             dimensiune_fractala_medie_list.append(fractal_dim)
+            dim_medii["b"] = fractal_dim
+            lac_medii["b"] = lacunaritate_medie
 
             lacunaritate_tabel_terminal.add_row(['-'] * len(set(lacunaritate_tabel_terminal_header)))
             dim_fractala_medie_rows.append([filename, os.path.join(original_images_path, original_filename), sum(dimensiune_fractala_medie_list) / len(dimensiune_fractala_medie_list), sum(lacunaritate_medie_list) / len(lacunaritate_medie_list)])
 
+            dim_medii["medie"] = sum(dimensiune_fractala_medie_list) / len(dimensiune_fractala_medie_list)
+            lac_medii["medie"] = sum(lacunaritate_medie_list) / len(lacunaritate_medie_list)
+            # dim_medii_overall.append((sum(dimensiune_fractala_medie_list) / len(dimensiune_fractala_medie_list)))
+            # lac_medii_overall.append((sum(lacunaritate_medie_list) / len(lacunaritate_medie_list)))
+
+            dim_fractal_graph.append((filename, dim_medii))
+            lac_graph.append((filename, lac_medii))
+
             sys.stdout.flush()
             sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
+    
+
+    print(dim_fractal_graph)
+    build_graphs(dim_fractal_graph, 'Dimensiunile fractale')
+    build_graphs(lac_graph, 'Valorile lacunaritatii')
     
     build_word_doc(first_rows, first_headers, 'tabel_principal.docx')
     build_word_doc(lacunaritate_rows, lacunaritate_header, 'lacunaritate.docx')
