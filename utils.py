@@ -47,31 +47,27 @@ def build_word_doc(rows, headers, doc_name):
     doc.save(os.path.join(curr, doc_name))
 
 def build_graphs(data, title):
-    # L_r_BKL = [2.4103, 2.0931, 2.0253, 1.8987, 2.1730, 1.9748, 2.2726, 1.8851, 1.9648, 1.4755]
-    # L_g_BKL = [2.3268, 1.6914, 1.9552, 1.7396, 1.9713, 1.7981, 2.0550, 1.7214, 1.7862, 1.3639]
-    # L_b_BKL = [2.0631, 1.4805, 1.8781, 1.4857, 1.8534, 1.5355, 1.7378, 1.4143, 1.6267, 1.3046]
-    # L_rgb_BKL = [2.2668, 1.7550, 1.9529, 1.7080, 1.9992, 1.7695, 2.0218, 1.6736, 1.7926, 1.3813]
-    maligne = []
     benigne = []
-    print(data)
+    maligne = []
     for i in data:
         name, values = i
         if '_b' in name:
-            benigne.append((name, values))
+            benigne.append([name, values["r"], values["g"], values["b"], values["medie"]])
         elif '_m' in name:
-            maligne.append((name, values))
+            maligne.append((name, values["r"], values["g"], values["b"], values["medie"]))
     
     print(maligne)
         
-
+    for ben in benigne:
+        print(ben)
     # X = np.arange(10)
     # fig = plt.figure(figsize=(15, 8), dpi=80)
 
     # ax = fig.add_axes([0,0,1,1])
-    # ax.bar(X + 0.00, L_r_BKL, color = 'b', width = 0.20, label='canal R')
-    # ax.bar(X + 0.20, L_g_BKL, color = 'g', width = 0.20, label='canal G')
-    # ax.bar(X + 0.40, L_b_BKL, color = 'r', width = 0.20, label='canal B')
-    # ax.bar(X + 0.60, L_rgb_BKL, color = 'purple', width = 0.20, label='Media')
+    # ax.bar(X + 0.00, values["b"], color = 'b', width = 0.20, label='canal R')
+    # ax.bar(X + 0.20, values["g"], color = 'g', width = 0.20, label='canal G')
+    # ax.bar(X + 0.40, values["r"], color = 'r', width = 0.20, label='canal B')
+    # ax.bar(X + 0.60,  values["medie"], color = 'purple', width = 0.20, label='Media')
     # leg = ax.legend()
 
     # #plt.xticks(X, ['img_1', 'G2', 'G3', 'G4', 'G5', 'img6', 'img7', 'img8', 'img9', 'img10'])
@@ -281,8 +277,6 @@ def rgb(imgFilePath, newImgPath):
 
             dim_medii["medie"] = sum(dimensiune_fractala_medie_list) / len(dimensiune_fractala_medie_list)
             lac_medii["medie"] = sum(lacunaritate_medie_list) / len(lacunaritate_medie_list)
-            # dim_medii_overall.append((sum(dimensiune_fractala_medie_list) / len(dimensiune_fractala_medie_list)))
-            # lac_medii_overall.append((sum(lacunaritate_medie_list) / len(lacunaritate_medie_list)))
 
             dim_fractal_graph.append((filename, dim_medii))
             lac_graph.append((filename, lac_medii))
@@ -291,7 +285,6 @@ def rgb(imgFilePath, newImgPath):
             sys.stdout.write("\bCurrent progress: %s %%\r" % (str(math.ceil(idx / len(files) * 100))))
     
 
-    print(dim_fractal_graph)
     build_graphs(dim_fractal_graph, 'Dimensiunile fractale')
     build_graphs(lac_graph, 'Valorile lacunaritatii')
     
